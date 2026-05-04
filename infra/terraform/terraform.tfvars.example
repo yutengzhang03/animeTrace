@@ -1,31 +1,117 @@
+# Fanji Terraform settings
+# Copy this file to terraform.tfvars and edit that copy:
+#   cp terraform.tfvars.example terraform.tfvars
+#
+# Prices below are approximate Linux On-Demand prices for us-east-1 checked in May 2026.
+# Always verify current pricing for your own region before running production traffic.
+
+# -----------------------------------------------------------------------------
+# AWS/account basics
+# -----------------------------------------------------------------------------
 aws_region  = "us-east-1"
 project_name = "fanji"
 environment  = "prod"
 
-app_repo_url       = "https://github.com/yutengzhang03/fanji.git"
-app_git_ref        = "main"
+# The app repo that every new EC2 instance clones when it boots.
+# If you fork this repo, change app_repo_url to your fork URL.
+app_repo_url = "https://github.com/yutengzhang03/animeTrace.git"
+app_git_ref  = "main"
+
+# Bump this after pushing new code to force a rolling instance refresh.
+# Example values: "2026-05-04-1", "v0.3.0", "deploy-002".
 deployment_version = "v1"
 
+# -----------------------------------------------------------------------------
+# SSH key
+# -----------------------------------------------------------------------------
+# If your private key is 619_2.pem, the AWS EC2 key pair is usually named 619_2.
+# Change this when you use another .pem/key pair.
 key_name = "619_2"
+
+# If the key pair does not exist in AWS yet:
+#   ssh-keygen -y -f /absolute/path/to/619_2.pem > /absolute/path/to/619_2.pub
+# Then uncomment these two lines.
+# create_key_pair = true
+# public_key_path = "/absolute/path/to/619_2.pub"
 
 # Put your own public IP here, for example ["203.0.113.10/32"].
 # Leave [] if you do not want SSH opened at all.
 ssh_cidr_blocks = []
 
-# Cheap ARM instances. If you switch to t3.micro/t2.micro, also set instance_architecture = "x86_64".
+# -----------------------------------------------------------------------------
+# Instance size
+# -----------------------------------------------------------------------------
+# Cheap choices for this app, us-east-1 Linux On-Demand:
+#
+# ARM/Graviton, recommended for lowest cost:
+#   t4g.nano   = 2 vCPU, 0.5 GiB RAM, arm64, about $0.0042/hr (~$3.07/mo)
+#   t4g.micro  = 2 vCPU, 1.0 GiB RAM, arm64, about $0.0084/hr (~$6.13/mo)
+#   t4g.small  = 2 vCPU, 2.0 GiB RAM, arm64, about $0.0168/hr (~$12.26/mo)
+#
+# x86 choices:
+#   t3.micro   = 2 vCPU, 1.0 GiB RAM, x86_64, often free-tier eligible on new accounts
+#   t3.small   = 2 vCPU, 2.0 GiB RAM, x86_64, about $0.0208/hr (~$15.18/mo)
+#
+# Important:
+#   t4g.* needs instance_architecture = "arm64"
+#   t3.* / t2.* needs instance_architecture = "x86_64"
 instance_type         = "t4g.micro"
 instance_architecture = "arm64"
+root_volume_size      = 12
 
+# false = basic EC2 monitoring, CPU metrics every 5 minutes, no extra detailed-monitoring charge.
+# true  = detailed EC2 monitoring, CPU metrics every 1 minute, faster scaling but extra CloudWatch cost.
+enable_detailed_monitoring = false
+
+# -----------------------------------------------------------------------------
+# Auto Scaling capacity
+# -----------------------------------------------------------------------------
+# min: never go below this many instances
+# desired: starting instance count after terraform apply
+# max: never go above this many instances
 asg_min_size         = 1
 asg_desired_capacity = 1
 asg_max_size         = 3
-cpu_target_value     = 55
+
+# -----------------------------------------------------------------------------
+# CPU-based scaling
+# -----------------------------------------------------------------------------
+# Scale out when average ASG CPU >= this percentage for the evaluation window.
+cpu_scale_out_threshold = 70
+
+# Scale in when average ASG CPU <= this percentage for the evaluation window.
+cpu_scale_in_threshold = 25
+
+# Evaluation window = cpu_alarm_period_seconds * cpu_alarm_evaluation_periods.
+# Default below means "10 minutes" and matches EC2 basic monitoring.
+# If enable_detailed_monitoring = true, you can set cpu_alarm_period_seconds = 60.
+cpu_alarm_period_seconds    = 300
+cpu_alarm_evaluation_periods = 2
+
+# How many instances to add/remove per scaling event.
+scale_out_adjustment = 1
+scale_in_adjustment  = 1
+
+# Wait this long after scaling before another simple scaling action.
+scaling_cooldown_seconds = 300
+
+# Give new instances time to install dependencies, build the app, and pass ALB health checks.
+health_check_grace_period = 300
+
+# -----------------------------------------------------------------------------
+# App/runtime settings
+# -----------------------------------------------------------------------------
+app_port = 3001
 
 # Recommended: set a stable secret instead of relying on the generated one in Terraform state.
-# Generate one with: openssl rand -hex 32
+# Generate one with:
+#   openssl rand -hex 32
 # fanji_token_secret = "replace-with-a-64-char-hex-secret"
 
-# Optional HTTPS. Create/import an ACM certificate in the same region first, then paste the ARN.
+# -----------------------------------------------------------------------------
+# Optional HTTPS/custom domain
+# -----------------------------------------------------------------------------
+# Create/import an ACM certificate in the same AWS region first, then paste the ARN.
 # Also point this domain to the ALB DNS name with Route 53 ALIAS or a CNAME.
 # domain_name     = "fanji.example.com"
 # certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."

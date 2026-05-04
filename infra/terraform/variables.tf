@@ -19,7 +19,7 @@ variable "environment" {
 variable "app_repo_url" {
   description = "Git repository URL that each EC2 instance clones at boot."
   type        = string
-  default     = "https://github.com/yutengzhang03/fanji.git"
+  default     = "https://github.com/yutengzhang03/animeTrace.git"
 }
 
 variable "app_git_ref" {
@@ -87,6 +87,12 @@ variable "root_volume_size" {
   default     = 12
 }
 
+variable "enable_detailed_monitoring" {
+  description = "Enable EC2 detailed monitoring for 1-minute CPU metrics. This can add CloudWatch cost."
+  type        = bool
+  default     = false
+}
+
 variable "asg_min_size" {
   description = "Minimum number of app instances."
   type        = number
@@ -105,10 +111,66 @@ variable "asg_max_size" {
   default     = 3
 }
 
-variable "cpu_target_value" {
-  description = "Target average CPU percentage for Auto Scaling target tracking."
+variable "cpu_scale_out_threshold" {
+  description = "Average ASG CPU percentage that triggers adding instances."
   type        = number
-  default     = 55
+  default     = 70
+
+  validation {
+    condition     = var.cpu_scale_out_threshold >= 1 && var.cpu_scale_out_threshold <= 100
+    error_message = "cpu_scale_out_threshold must be between 1 and 100."
+  }
+}
+
+variable "cpu_scale_in_threshold" {
+  description = "Average ASG CPU percentage that triggers removing instances."
+  type        = number
+  default     = 25
+
+  validation {
+    condition     = var.cpu_scale_in_threshold >= 0 && var.cpu_scale_in_threshold <= 99
+    error_message = "cpu_scale_in_threshold must be between 0 and 99."
+  }
+}
+
+variable "cpu_alarm_period_seconds" {
+  description = "CloudWatch CPU alarm period in seconds."
+  type        = number
+  default     = 300
+}
+
+variable "cpu_alarm_evaluation_periods" {
+  description = "Number of periods that must breach before scaling."
+  type        = number
+  default     = 2
+}
+
+variable "scale_out_adjustment" {
+  description = "Number of instances to add when the high CPU alarm fires."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.scale_out_adjustment >= 1
+    error_message = "scale_out_adjustment must be at least 1."
+  }
+}
+
+variable "scale_in_adjustment" {
+  description = "Number of instances to remove when the low CPU alarm fires."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.scale_in_adjustment >= 1
+    error_message = "scale_in_adjustment must be at least 1."
+  }
+}
+
+variable "scaling_cooldown_seconds" {
+  description = "Cooldown after a scaling action before another simple scaling action can run."
+  type        = number
+  default     = 300
 }
 
 variable "health_check_grace_period" {

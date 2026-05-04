@@ -288,6 +288,10 @@ resource "aws_launch_template" "app" {
     http_tokens   = "required"
   }
 
+  monitoring {
+    enabled = var.enable_detailed_monitoring
+  }
+
   network_interfaces {
     associate_public_ip_address = true
     security_groups             = [aws_security_group.app.id]
@@ -388,16 +392,66 @@ resource "aws_autoscaling_group" "app" {
   ]
 }
 
-resource "aws_autoscaling_policy" "cpu_target_tracking" {
-  name                   = "${local.name_prefix}-cpu-target"
+resource "aws_autoscaling_policy" "scale_out" {
+  name                   = "${local.name_prefix}-cpu-scale-out"
   autoscaling_group_name = aws_autoscaling_group.app.name
-  policy_type            = "TargetTrackingScaling"
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = var.scaling_cooldown_seconds
+  policy_type            = "SimpleScaling"
+  scaling_adjustment     = var.scale_out_adjustment
+}
 
-  target_tracking_configuration {
-    target_value = var.cpu_target_value
+resource "aws_autoscaling_policy" "scale_in" {
+  name                   = "${local.name_prefix}-cpu-scale-in"
+  autoscaling_group_name = aws_autoscaling_group.app.name
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = var.scaling_cooldown_seconds
+  policy_type            = "SimpleScaling"
+  scaling_adjustment     = -var.scale_in_adjustment
+}
 
-    predefined_metric_specification {
-      predefined_metric_type = "ASGAverageCPUUtilization"
-    }
+resource "aws_cloudwatch_metric_alarm" "high_cpu" {
+  alarm_name          = "${local.name_prefix}-high-cpu"
+  alarm_description   = "Scale out when average Auto Scaling group CPU is high."
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = var.cpu_alarm_evaluation_periods
+  datapoints_to_alarm = var.cpu_alarm_evaluation_periods
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = var.cpu_alarm_period_seconds
+  statistic           = "Average"
+  threshold           = var.cpu_scale_out_threshold
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_autoscaling_policy.scale_out.arn]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app.name
   }
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-high-cpu"
+  })
+}
+
+resource "aws_cloudwatch_metric_alarm" "low_cpu" {
+  alarm_name          = "${local.name_prefix}-low-cpu"
+  alarm_description   = "Scale in when average Auto Scaling group CPU is low."
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = var.cpu_alarm_evaluation_periods
+  datapoints_to_alarm = var.cpu_alarm_evaluation_periods
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = var.cpu_alarm_period_seconds
+  statistic           = "Average"
+  threshold           = var.cpu_scale_in_threshold
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_autoscaling_policy.scale_in.arn]
+
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app.name
+  }
+
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-low-cpu"
+  })
 }
