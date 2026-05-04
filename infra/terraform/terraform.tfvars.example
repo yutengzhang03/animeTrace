@@ -24,15 +24,15 @@ deployment_version = "v1"
 # -----------------------------------------------------------------------------
 # SSH key
 # -----------------------------------------------------------------------------
-# If your private key is 619_2.pem, the AWS EC2 key pair is usually named 619_2.
-# Change this when you use another .pem/key pair.
-key_name = "619_2"
+# key_name is the EC2 key pair name in AWS, not the local .pem path.
+# Example: if your private key is your_ssh_key.pem, the key pair name is often your_ssh_key.
+key_name = "your-key-pair-name"
 
 # If the key pair does not exist in AWS yet:
-#   ssh-keygen -y -f /absolute/path/to/619_2.pem > /absolute/path/to/619_2.pub
+#   ssh-keygen -y -f /absolute/path/to/your_ssh_key.pem > /absolute/path/to/your_ssh_key.pub
 # Then uncomment these two lines.
 # create_key_pair = true
-# public_key_path = "/absolute/path/to/619_2.pub"
+# public_key_path = "/absolute/path/to/your_ssh_key.pub"
 
 # Put your own public IP here, for example ["203.0.113.10/32"].
 # Leave [] if you do not want SSH opened at all.

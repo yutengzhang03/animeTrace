@@ -43,26 +43,26 @@ This Terraform currently uses the AWS default VPC. Most accounts have one. If yo
 
 ## SSH Key
 
-If your private key file is named `619_2.pem`, the EC2 key pair in AWS is usually named `619_2`.
+You need an EC2 key pair for SSH. `key_name` is the key pair name in AWS, not the local `.pem` path. For example, if your private key is `your_ssh_key.pem`, the AWS key pair is often named `your_ssh_key`.
 
 Set local permissions:
 
 ```bash
-chmod 400 /path/to/619_2.pem
+chmod 400 /path/to/your_ssh_key.pem
 ```
 
 If the key pair does not exist in AWS yet, create a public key from your `.pem`:
 
 ```bash
-ssh-keygen -y -f /path/to/619_2.pem > /path/to/619_2.pub
+ssh-keygen -y -f /path/to/your_ssh_key.pem > /path/to/your_ssh_key.pub
 ```
 
 Then set these in `terraform.tfvars`:
 
 ```hcl
 create_key_pair = true
-public_key_path = "/path/to/619_2.pub"
-key_name        = "619_2"
+public_key_path = "/path/to/your_ssh_key.pub"
+key_name        = "your-key-pair-name"
 ```
 
 ## Configure Terraform
@@ -82,7 +82,7 @@ At minimum, check:
 aws_region   = "us-east-1"
 app_repo_url = "https://github.com/yutengzhang03/animeTrace.git"
 app_git_ref  = "main"
-key_name     = "619_2"
+key_name     = "your-key-pair-name"
 ```
 
 Allow SSH only from your current public IP:
@@ -235,7 +235,7 @@ $(terraform output -raw find_instance_public_ips_command)
 SSH in:
 
 ```bash
-ssh -i /path/to/619_2.pem ec2-user@INSTANCE_PUBLIC_IP
+ssh -i /path/to/your_ssh_key.pem ec2-user@INSTANCE_PUBLIC_IP
 ```
 
 Check logs:
@@ -272,7 +272,7 @@ $(terraform output -raw find_instance_public_ips_command)
 Upload the old database:
 
 ```bash
-scp -i /path/to/619_2.pem /path/to/animeTrace.db ec2-user@INSTANCE_PUBLIC_IP:/tmp/animeTrace.db
+scp -i /path/to/your_ssh_key.pem /path/to/animeTrace.db ec2-user@INSTANCE_PUBLIC_IP:/tmp/animeTrace.db
 ```
 
 SSH in and move it into EFS:
@@ -344,7 +344,7 @@ terraform destroy
 This deletes the ALB, ASG, EC2 instances, EFS, and the SQLite database on EFS. Back up first if you need the data:
 
 ```bash
-scp -i /path/to/619_2.pem ec2-user@INSTANCE_PUBLIC_IP:/mnt/animeTrace-data/animeTrace.db ./animeTrace-backup.db
+scp -i /path/to/your_ssh_key.pem ec2-user@INSTANCE_PUBLIC_IP:/mnt/animeTrace-data/animeTrace.db ./animeTrace-backup.db
 ```
 
 ## Cost Notes

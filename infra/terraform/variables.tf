@@ -41,9 +41,9 @@ variable "app_port" {
 }
 
 variable "key_name" {
-  description = "EC2 key pair name. If your private key is 619_2.pem, the AWS key pair is commonly named 619_2."
+  description = "EC2 key pair name in AWS. This is usually the .pem filename without the .pem suffix."
   type        = string
-  default     = "619_2"
+  default     = "your-key-pair-name"
 }
 
 variable "create_key_pair" {
