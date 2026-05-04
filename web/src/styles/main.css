@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+html, body, #app {
+  height: 100%;
+}
+body {
+  @apply bg-ink-50 text-ink-900 antialiased;
+}
+html.dark body {
+  @apply bg-ink-900 text-ink-100;
+  color: #e5e7eb;
+}
+html.dark .bg-white {
+  background-color: #1e293b;
+}
+html.dark .text-ink-900 { color: #e5e7eb; }
+html.dark .text-ink-700 { color: #cbd5e1; }
+html.dark .text-slate-500 { color: #94a3b8; }
+html.dark .border-slate-200 { border-color: #334155; }
+html.dark .bg-slate-50 { background-color: #0f172a; }
+
+/* 卡片基础 */
+.card {
+  @apply bg-white rounded-xl shadow-card overflow-hidden;
+}
+
+/* 番剧封面占位 */
+.cover-placeholder {
+  background: linear-gradient(135deg, #fce7f3 0%, #dbeafe 100%);
+}
+
+/* 让 Element Plus 在暗色下不太刺眼 */
+html.dark .el-card,
+html.dark .el-popover,
+html.dark .el-select-dropdown,
+html.dark .el-message-box {
+  background-color: #1e293b !important;
+  color: #e5e7eb !important;
+  border-color: #334155 !important;
+}
+
+/* 隐藏滚动条但保留功能 */
+.scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scroll-thin::-webkit-scrollbar-thumb { background: rgba(100,116,139,.3); border-radius: 3px; }

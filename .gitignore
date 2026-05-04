@@ -1,0 +1,15 @@
+node_modules
+.DS_Store
+.env
+.env.local
+dist
+*.log
+server/data/*.db
+server/data/*.db-journal
+.vite
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+infra/terraform/terraform.tfvars

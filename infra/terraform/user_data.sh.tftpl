@@ -1,0 +1,87 @@
+#!/bin/bash
+set -euxo pipefail
+
+exec > >(tee /var/log/fanji-bootstrap.log | logger -t fanji-bootstrap -s 2>/dev/console) 2>&1
+
+APP_REPO_URL=${jsonencode(app_repo_url)}
+APP_GIT_REF=${jsonencode(app_git_ref)}
+DEPLOYMENT_VERSION=${jsonencode(deployment_version)}
+EFS_FILE_SYSTEM_ID=${jsonencode(efs_file_system_id)}
+APP_PORT=${app_port}
+APP_DIR="/opt/fanji"
+DB_DIR="/mnt/fanji-data"
+
+dnf update -y
+dnf install -y git curl amazon-efs-utils nodejs22 nodejs22-npm
+alternatives --set node /usr/bin/node-22 || true
+alternatives --set npm /usr/bin/npm-22 || true
+
+mkdir -p "$DB_DIR"
+if ! mountpoint -q "$DB_DIR"; then
+  mount -t efs -o tls "$EFS_FILE_SYSTEM_ID:/" "$DB_DIR"
+fi
+
+if ! grep -q "$EFS_FILE_SYSTEM_ID:/ $DB_DIR efs" /etc/fstab; then
+  echo "$EFS_FILE_SYSTEM_ID:/ $DB_DIR efs _netdev,tls 0 0" >> /etc/fstab
+fi
+
+chown -R ec2-user:ec2-user "$DB_DIR"
+chmod 750 "$DB_DIR"
+
+if [ ! -d "$APP_DIR/.git" ]; then
+  rm -rf "$APP_DIR"
+  git clone "$APP_REPO_URL" "$APP_DIR"
+fi
+
+cd "$APP_DIR"
+git fetch --all --tags --prune
+
+if git rev-parse --verify --quiet "origin/$APP_GIT_REF"; then
+  git checkout -B "$APP_GIT_REF" "origin/$APP_GIT_REF"
+else
+  git checkout "$APP_GIT_REF"
+fi
+
+chown -R ec2-user:ec2-user "$APP_DIR"
+sudo -u ec2-user npm ci
+sudo -u ec2-user npm --prefix server ci
+sudo -u ec2-user npm --prefix web ci
+sudo -u ec2-user npm --prefix web run build
+
+cat >/etc/systemd/system/fanji.service <<SERVICE
+[Unit]
+Description=Fanji Anime Tracker
+After=network-online.target remote-fs.target
+Wants=network-online.target
+RequiresMountsFor=$DB_DIR
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=$APP_DIR/server
+ExecStart=/usr/bin/node-22 --experimental-sqlite --no-warnings=ExperimentalWarning src/app.js
+Restart=on-failure
+RestartSec=5
+Environment=PORT=$APP_PORT
+Environment=HOST=0.0.0.0
+Environment=FANJI_DB_PATH=$DB_DIR/fanji.db
+Environment=FANJI_TOKEN_SECRET=${fanji_token_secret}
+Environment=FANJI_DEPLOYMENT_VERSION=$DEPLOYMENT_VERSION
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+systemctl daemon-reload
+systemctl enable fanji
+systemctl restart fanji
+
+for _ in $(seq 1 30); do
+  if curl -fsS "http://127.0.0.1:$APP_PORT/api/health"; then
+    exit 0
+  fi
+  sleep 5
+done
+
+journalctl -u fanji --no-pager -n 100
+exit 1

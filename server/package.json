@@ -1,0 +1,17 @@
+{
+  "name": "fanji-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node --experimental-sqlite --no-warnings=ExperimentalWarning src/app.js",
+    "dev": "node --experimental-sqlite --no-warnings=ExperimentalWarning --watch src/app.js",
+    "migrate": "node --experimental-sqlite --no-warnings=ExperimentalWarning src/migrate-user.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "morgan": "^1.10.0"
+  }
+}

@@ -1,0 +1,31 @@
+aws_region  = "us-east-1"
+project_name = "fanji"
+environment  = "prod"
+
+app_repo_url       = "https://github.com/yutengzhang03/fanji.git"
+app_git_ref        = "main"
+deployment_version = "v1"
+
+key_name = "619_2"
+
+# Put your own public IP here, for example ["203.0.113.10/32"].
+# Leave [] if you do not want SSH opened at all.
+ssh_cidr_blocks = []
+
+# Cheap ARM instances. If you switch to t3.micro/t2.micro, also set instance_architecture = "x86_64".
+instance_type         = "t4g.micro"
+instance_architecture = "arm64"
+
+asg_min_size         = 1
+asg_desired_capacity = 1
+asg_max_size         = 3
+cpu_target_value     = 55
+
+# Recommended: set a stable secret instead of relying on the generated one in Terraform state.
+# Generate one with: openssl rand -hex 32
+# fanji_token_secret = "replace-with-a-64-char-hex-secret"
+
+# Optional HTTPS. Create/import an ACM certificate in the same region first, then paste the ARN.
+# Also point this domain to the ALB DNS name with Route 53 ALIAS or a CNAME.
+# domain_name     = "fanji.example.com"
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
