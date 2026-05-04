@@ -12,8 +12,8 @@
 import { db } from '../db.js';
 
 const BASE_URL = 'https://api.bgm.tv';
-// 按官方建议带上联系方式；fanji 是项目名
-const USER_AGENT = 'fanji/0.1 (https://github.com/local/fanji)';
+// 按官方建议带上联系方式；animeTrace 是项目名
+const USER_AGENT = 'animeTrace/0.1 (https://github.com/yutengzhang03/animeTrace)';
 
 const CACHE_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 天
 

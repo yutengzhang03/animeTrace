@@ -1,5 +1,5 @@
 output "app_url" {
-  description = "Public URL for Fanji."
+  description = "Public URL for animeTrace."
   value = var.domain_name != "" ? (
     var.certificate_arn == "" ? "http://${var.domain_name}" : "https://${var.domain_name}"
     ) : (

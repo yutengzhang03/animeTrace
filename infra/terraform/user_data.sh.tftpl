@@ -1,15 +1,15 @@
 #!/bin/bash
 set -euxo pipefail
 
-exec > >(tee /var/log/fanji-bootstrap.log | logger -t fanji-bootstrap -s 2>/dev/console) 2>&1
+exec > >(tee /var/log/animetrace-bootstrap.log | logger -t animetrace-bootstrap -s 2>/dev/console) 2>&1
 
 APP_REPO_URL=${jsonencode(app_repo_url)}
 APP_GIT_REF=${jsonencode(app_git_ref)}
 DEPLOYMENT_VERSION=${jsonencode(deployment_version)}
 EFS_FILE_SYSTEM_ID=${jsonencode(efs_file_system_id)}
 APP_PORT=${app_port}
-APP_DIR="/opt/fanji"
-DB_DIR="/mnt/fanji-data"
+APP_DIR="/opt/animeTrace"
+DB_DIR="/mnt/animeTrace-data"
 
 dnf update -y
 dnf install -y git curl amazon-efs-utils nodejs22 nodejs22-npm
@@ -48,9 +48,9 @@ sudo -u ec2-user npm --prefix server ci
 sudo -u ec2-user npm --prefix web ci
 sudo -u ec2-user npm --prefix web run build
 
-cat >/etc/systemd/system/fanji.service <<SERVICE
+cat >/etc/systemd/system/animetrace.service <<SERVICE
 [Unit]
-Description=Fanji Anime Tracker
+Description=animeTrace Anime Tracker
 After=network-online.target remote-fs.target
 Wants=network-online.target
 RequiresMountsFor=$DB_DIR
@@ -64,17 +64,17 @@ Restart=on-failure
 RestartSec=5
 Environment=PORT=$APP_PORT
 Environment=HOST=0.0.0.0
-Environment=FANJI_DB_PATH=$DB_DIR/fanji.db
-Environment=FANJI_TOKEN_SECRET=${fanji_token_secret}
-Environment=FANJI_DEPLOYMENT_VERSION=$DEPLOYMENT_VERSION
+Environment=ANIMETRACE_DB_PATH=$DB_DIR/animeTrace.db
+Environment=ANIMETRACE_TOKEN_SECRET=${animetrace_token_secret}
+Environment=ANIMETRACE_DEPLOYMENT_VERSION=$DEPLOYMENT_VERSION
 
 [Install]
 WantedBy=multi-user.target
 SERVICE
 
 systemctl daemon-reload
-systemctl enable fanji
-systemctl restart fanji
+systemctl enable animetrace
+systemctl restart animetrace
 
 for _ in $(seq 1 30); do
   if curl -fsS "http://127.0.0.1:$APP_PORT/api/health"; then
@@ -83,5 +83,5 @@ for _ in $(seq 1 30); do
   sleep 5
 done
 
-journalctl -u fanji --no-pager -n 100
+journalctl -u animetrace --no-pager -n 100
 exit 1

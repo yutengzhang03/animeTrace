@@ -28,7 +28,7 @@
 ## 目录结构
 
 ```text
-fanji/
+animeTrace/
 ├── package.json
 ├── server/
 │   ├── src/
@@ -37,7 +37,7 @@ fanji/
 │   │   ├── routes/
 │   │   ├── services/
 │   │   └── middleware/
-│   └── data/fanji.db
+│   └── data/animeTrace.db
 ├── web/
 │   ├── src/
 │   └── dist/
@@ -79,7 +79,7 @@ npm run serve
 生产环境建议固定 token 签名密钥，避免重启后所有用户重新登录：
 
 ```bash
-FANJI_TOKEN_SECRET="$(openssl rand -hex 32)" npm run serve
+ANIMETRACE_TOKEN_SECRET="$(openssl rand -hex 32)" npm run serve
 ```
 
 ## AWS 部署
@@ -115,8 +115,8 @@ cp terraform.tfvars.example terraform.tfvars
 |---|---:|---|
 | `PORT` | `3001` | 后端监听端口 |
 | `HOST` | `0.0.0.0` | 后端监听地址 |
-| `FANJI_TOKEN_SECRET` | 启动时随机 | Token 签名密钥；生产环境务必固定 |
-| `FANJI_DB_PATH` | `server/data/fanji.db` | SQLite 数据库路径 |
+| `ANIMETRACE_TOKEN_SECRET` | 启动时随机 | Token 签名密钥；生产环境务必固定 |
+| `ANIMETRACE_DB_PATH` | `server/data/animeTrace.db` | SQLite 数据库路径 |
 
 ## 数据来源
 

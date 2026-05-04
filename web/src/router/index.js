@@ -18,7 +18,7 @@ const router = createRouter({
 
 // 路由守卫：检查登录态（直接读 localStorage 避免循环依赖）
 router.beforeEach((to) => {
-  const hasToken = !!localStorage.getItem('fanji.token');
+  const hasToken = !!localStorage.getItem('animeTrace.token');
 
   if (to.meta.auth && !hasToken) {
     return { name: 'login', query: { redirect: to.fullPath } };

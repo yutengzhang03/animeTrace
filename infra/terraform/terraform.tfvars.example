@@ -1,4 +1,4 @@
-# Fanji Terraform settings
+# animeTrace Terraform settings
 # Copy this file to terraform.tfvars and edit that copy:
 #   cp terraform.tfvars.example terraform.tfvars
 #
@@ -9,7 +9,7 @@
 # AWS/account basics
 # -----------------------------------------------------------------------------
 aws_region  = "us-east-1"
-project_name = "fanji"
+project_name = "animeTrace"
 environment  = "prod"
 
 # The app repo that every new EC2 instance clones when it boots.
@@ -106,12 +106,12 @@ app_port = 3001
 # Recommended: set a stable secret instead of relying on the generated one in Terraform state.
 # Generate one with:
 #   openssl rand -hex 32
-# fanji_token_secret = "replace-with-a-64-char-hex-secret"
+# animetrace_token_secret = "replace-with-a-64-char-hex-secret"
 
 # -----------------------------------------------------------------------------
 # Optional HTTPS/custom domain
 # -----------------------------------------------------------------------------
 # Create/import an ACM certificate in the same AWS region first, then paste the ARN.
 # Also point this domain to the ALB DNS name with Route 53 ALIAS or a CNAME.
-# domain_name     = "fanji.example.com"
+# domain_name     = "animetrace.example.com"
 # certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."

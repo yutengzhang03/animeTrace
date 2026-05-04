@@ -19,9 +19,9 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// 默认放在 server/data/fanji.db。可通过 FANJI_DB_PATH 覆盖。
+// 默认放在 server/data/animeTrace.db。可通过 ANIMETRACE_DB_PATH 覆盖。
 const DB_PATH =
-  process.env.FANJI_DB_PATH || path.resolve(__dirname, '..', 'data', 'fanji.db');
+  process.env.ANIMETRACE_DB_PATH || path.resolve(__dirname, '..', 'data', 'animeTrace.db');
 const DATA_DIR = path.dirname(DB_PATH);
 
 if (!fs.existsSync(DATA_DIR)) {
@@ -162,7 +162,7 @@ export function verifyPassword(password, storedHash, salt) {
 }
 
 // ---- JWT-like token（HMAC-SHA256 签名）----
-const TOKEN_SECRET = process.env.FANJI_TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
+const TOKEN_SECRET = process.env.ANIMETRACE_TOKEN_SECRET || crypto.randomBytes(32).toString('hex');
 
 export function createToken(userId, username) {
   const payload = JSON.stringify({ id: userId, u: username, exp: Math.floor(Date.now() / 1000) + 86400 * 30 }); // 30 天

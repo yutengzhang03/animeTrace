@@ -13,7 +13,7 @@ import { parseToken } from '../db.js';
  */
 function extractUser(req) {
   const header = req.headers['authorization'] || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : (req.headers['x-fanji-token'] || '');
+  const token = header.startsWith('Bearer ') ? header.slice(7) : (req.headers['x-animetrace-token'] || '');
   if (!token) return null;
   return parseToken(token);
 }

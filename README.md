@@ -1,8 +1,8 @@
-# Fanji
+# animeTrace
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-Fanji is a lightweight multi-user anime tracking app. Search anime from the official Bangumi API, save shows to your own library, and track status, progress, rating, and notes.
+animeTrace is a lightweight multi-user anime tracking app. Search anime from the official Bangumi API, save shows to your own library, and track status, progress, rating, and notes.
 
 It is built for local development, single-port production hosting, and AWS deployment with Terraform-managed Auto Scaling.
 
@@ -28,7 +28,7 @@ It is built for local development, single-port production hosting, and AWS deplo
 ## Project Structure
 
 ```text
-fanji/
+animeTrace/
 ├── package.json
 ├── server/
 │   ├── src/
@@ -37,7 +37,7 @@ fanji/
 │   │   ├── routes/
 │   │   ├── services/
 │   │   └── middleware/
-│   └── data/fanji.db
+│   └── data/animeTrace.db
 ├── web/
 │   ├── src/
 │   └── dist/
@@ -79,7 +79,7 @@ Open http://localhost:3001.
 For production, set a stable token secret so logins survive restarts:
 
 ```bash
-FANJI_TOKEN_SECRET="$(openssl rand -hex 32)" npm run serve
+ANIMETRACE_TOKEN_SECRET="$(openssl rand -hex 32)" npm run serve
 ```
 
 ## AWS Deployment
@@ -115,12 +115,12 @@ Then edit instance type, key pair, capacity, CPU thresholds, domain, and other k
 |---|---:|---|
 | `PORT` | `3001` | Backend listen port |
 | `HOST` | `0.0.0.0` | Backend listen host |
-| `FANJI_TOKEN_SECRET` | random on boot | Token signing secret. Set this in production. |
-| `FANJI_DB_PATH` | `server/data/fanji.db` | SQLite database path |
+| `ANIMETRACE_TOKEN_SECRET` | random on boot | Token signing secret. Set this in production. |
+| `ANIMETRACE_DB_PATH` | `server/data/animeTrace.db` | SQLite database path |
 
 ## Data Source
 
-Fanji uses the official Bangumi v0 API: https://bangumi.github.io/api/
+animeTrace uses the official Bangumi v0 API: https://bangumi.github.io/api/
 
 ## License
 

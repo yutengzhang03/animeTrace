@@ -4,7 +4,7 @@
  */
 import { defineStore } from 'pinia';
 
-const KEY = 'fanji.theme';
+const KEY = 'animeTrace.theme';
 
 function applyTheme(mode) {
   const dark =

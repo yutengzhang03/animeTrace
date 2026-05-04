@@ -7,8 +7,8 @@
  */
 import axios from 'axios';
 
-const TOKEN_KEY = 'fanji.token';
-const USER_KEY = 'fanji.user';
+const TOKEN_KEY = 'animeTrace.token';
+const USER_KEY = 'animeTrace.user';
 
 const http = axios.create({
   baseURL: '/api',

@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Short project name used in resource names and tags."
   type        = string
-  default     = "fanji"
+  default     = "animeTrace"
 }
 
 variable "environment" {
@@ -179,7 +179,7 @@ variable "health_check_grace_period" {
   default     = 300
 }
 
-variable "fanji_token_secret" {
+variable "animetrace_token_secret" {
   description = "Stable HMAC secret for login tokens. Leave null to let Terraform generate one and store it in state."
   type        = string
   default     = null

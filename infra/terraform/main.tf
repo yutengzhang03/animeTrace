@@ -39,15 +39,15 @@ data "aws_ami" "al2023" {
   }
 }
 
-resource "random_password" "fanji_token_secret" {
+resource "random_password" "animetrace_token_secret" {
   length  = 64
   special = false
 }
 
 locals {
-  name_prefix             = substr("${var.project_name}-${var.environment}", 0, 20)
-  configured_token_secret = var.fanji_token_secret == null ? "" : trimspace(var.fanji_token_secret)
-  fanji_token_secret      = local.configured_token_secret != "" ? local.configured_token_secret : random_password.fanji_token_secret.result
+  name_prefix             = lower(substr("${var.project_name}-${var.environment}", 0, 20))
+  configured_token_secret = var.animetrace_token_secret == null ? "" : trimspace(var.animetrace_token_secret)
+  animetrace_token_secret = local.configured_token_secret != "" ? local.configured_token_secret : random_password.animetrace_token_secret.result
 
   common_tags = {
     Project     = var.project_name
@@ -76,7 +76,7 @@ resource "aws_key_pair" "ssh" {
 
 resource "aws_security_group" "alb" {
   name        = "${local.name_prefix}-alb-sg"
-  description = "Public HTTP/HTTPS access to Fanji ALB"
+  description = "Public HTTP/HTTPS access to animeTrace ALB"
   vpc_id      = data.aws_vpc.default.id
 
   tags = merge(local.common_tags, {
@@ -109,7 +109,7 @@ resource "aws_vpc_security_group_egress_rule" "alb_all" {
 
 resource "aws_security_group" "app" {
   name        = "${local.name_prefix}-app-sg"
-  description = "Fanji app instances"
+  description = "animeTrace app instances"
   vpc_id      = data.aws_vpc.default.id
 
   tags = merge(local.common_tags, {
@@ -142,7 +142,7 @@ resource "aws_vpc_security_group_egress_rule" "app_all" {
 
 resource "aws_security_group" "efs" {
   name        = "${local.name_prefix}-efs-sg"
-  description = "Fanji shared SQLite storage on EFS"
+  description = "animeTrace shared SQLite storage on EFS"
   vpc_id      = data.aws_vpc.default.id
 
   tags = merge(local.common_tags, {
@@ -298,12 +298,12 @@ resource "aws_launch_template" "app" {
   }
 
   user_data = base64encode(templatefile("${path.module}/user_data.sh.tftpl", {
-    app_git_ref        = var.app_git_ref
-    app_port           = var.app_port
-    app_repo_url       = var.app_repo_url
-    deployment_version = var.deployment_version
-    efs_file_system_id = aws_efs_file_system.data.id
-    fanji_token_secret = local.fanji_token_secret
+    app_git_ref             = var.app_git_ref
+    app_port                = var.app_port
+    app_repo_url            = var.app_repo_url
+    deployment_version      = var.deployment_version
+    efs_file_system_id      = aws_efs_file_system.data.id
+    animetrace_token_secret = local.animetrace_token_secret
   }))
 
   tag_specifications {

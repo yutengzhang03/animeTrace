@@ -2,7 +2,7 @@
 
 [Back to README](./README.md) | [简体中文 README](./README.zh-CN.md)
 
-This guide deploys Fanji to AWS with Terraform. It creates repeatable infrastructure instead of relying on Console click-through setup.
+This guide deploys animeTrace to AWS with Terraform. It creates repeatable infrastructure instead of relying on Console click-through setup.
 
 ## Architecture
 
@@ -13,7 +13,7 @@ Terraform creates:
 - CloudWatch CPU alarms:
   - high average CPU adds instances
   - low average CPU removes instances
-- Launch Template that installs Amazon Linux 2023, Node.js 22, and Fanji
+- Launch Template that installs Amazon Linux 2023, Node.js 22, and animeTrace
 - EFS shared storage for the SQLite database
 - Security groups:
   - public traffic reaches only the ALB
@@ -106,7 +106,7 @@ openssl rand -hex 32
 Then:
 
 ```hcl
-fanji_token_secret = "the-64-character-hex-value"
+animetrace_token_secret = "the-64-character-hex-value"
 ```
 
 ## Choose Instance Size
@@ -241,13 +241,13 @@ ssh -i /path/to/619_2.pem ec2-user@INSTANCE_PUBLIC_IP
 Check logs:
 
 ```bash
-sudo tail -n 200 /var/log/fanji-bootstrap.log
-sudo journalctl -u fanji -n 200 --no-pager
+sudo tail -n 200 /var/log/animetrace-bootstrap.log
+sudo journalctl -u animetrace -n 200 --no-pager
 ```
 
 ## Migrate Existing SQLite Data
 
-If your old EC2 instance already has `server/data/fanji.db`, copy it into EFS.
+If your old EC2 instance already has `server/data/animeTrace.db`, copy it into EFS.
 
 Temporarily keep the ASG at one instance:
 
@@ -272,16 +272,16 @@ $(terraform output -raw find_instance_public_ips_command)
 Upload the old database:
 
 ```bash
-scp -i /path/to/619_2.pem /path/to/fanji.db ec2-user@INSTANCE_PUBLIC_IP:/tmp/fanji.db
+scp -i /path/to/619_2.pem /path/to/animeTrace.db ec2-user@INSTANCE_PUBLIC_IP:/tmp/animeTrace.db
 ```
 
 SSH in and move it into EFS:
 
 ```bash
-sudo systemctl stop fanji
-sudo cp /tmp/fanji.db /mnt/fanji-data/fanji.db
-sudo chown ec2-user:ec2-user /mnt/fanji-data/fanji.db
-sudo systemctl start fanji
+sudo systemctl stop animetrace
+sudo cp /tmp/animeTrace.db /mnt/animeTrace-data/animeTrace.db
+sudo chown ec2-user:ec2-user /mnt/animeTrace-data/animeTrace.db
+sudo systemctl start animetrace
 ```
 
 After confirming the app works, restore your desired `asg_max_size`.
@@ -313,7 +313,7 @@ app_git_ref = "v0.3.0"
 Create or import an ACM certificate in the same region, validate it, then set:
 
 ```hcl
-domain_name     = "fanji.example.com"
+domain_name     = "animetrace.example.com"
 certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
 ```
 
@@ -344,7 +344,7 @@ terraform destroy
 This deletes the ALB, ASG, EC2 instances, EFS, and the SQLite database on EFS. Back up first if you need the data:
 
 ```bash
-scp -i /path/to/619_2.pem ec2-user@INSTANCE_PUBLIC_IP:/mnt/fanji-data/fanji.db ./fanji-backup.db
+scp -i /path/to/619_2.pem ec2-user@INSTANCE_PUBLIC_IP:/mnt/animeTrace-data/animeTrace.db ./animeTrace-backup.db
 ```
 
 ## Cost Notes
